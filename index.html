@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="claude:viewport-fit-sides" content="cover">
+  <title>OpenMontage Studio</title>
+  <meta name="description" content="Professional AI video and image generation studio powered by OpenMontage">
+
+  <!-- Google Fonts: Space Grotesk for display, Inter for body -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Tailwind CSS v4 via CDN -->
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+
+  <style>
+    /* Tailwind v4 CSS-first configuration with OKLCH tokens */
+    @import "tailwindcss";
+
+    @theme {
+      /* Brand palette - distinctive teal/cyan with warm neutrals */
+      --color-brand-50: oklch(97% 0.015 180);
+      --color-brand-100: oklch(92% 0.03 180);
+      --color-brand-200: oklch(84% 0.06 180);
+      --color-brand-300: oklch(72% 0.1 180);
+      --color-brand-400: oklch(60% 0.14 180);
+      --color-brand-500: oklch(48% 0.16 180);
+      --color-brand-600: oklch(40% 0.14 180);
+      --color-brand-700: oklch(32% 0.12 180);
+      --color-brand-800: oklch(26% 0.09 180);
+      --color-brand-900: oklch(20% 0.07 180);
+      --color-brand-950: oklch(14% 0.04 180);
+
+      /* Semantic tokens */
+      --color-background: oklch(99% 0.005 180);
+      --color-foreground: oklch(15% 0.02 180);
+      --color-card: oklch(100% 0 0);
+      --color-card-foreground: oklch(15% 0.02 180);
+      --color-muted: oklch(95% 0.01 180);
+      --color-muted-foreground: oklch(45% 0.02 180);
+      --color-border: oklch(88% 0.015 180);
+      --color-primary: oklch(48% 0.16 180);
+      --color-primary-foreground: oklch(98% 0.01 180);
+      --color-secondary: oklch(92% 0.015 180);
+      --color-secondary-foreground: oklch(20% 0.02 180);
+      --color-accent: oklch(90% 0.02 180);
+      --color-accent-foreground: oklch(20% 0.02 180);
+      --color-destructive: oklch(55% 0.22 25);
+      --color-destructive-foreground: oklch(98% 0.01 180);
+      --color-ring: oklch(48% 0.16 180);
+      --color-ring-offset: oklch(100% 0 0);
+
+      /* Radius */
+      --radius-sm: 0.25rem;
+      --radius-md: 0.375rem;
+      --radius-lg: 0.5rem;
+      --radius-xl: 0.75rem;
+      --radius-2xl: 1rem;
+
+      /* Animations */
+      --animate-fade-in: fade-in 0.2s ease-out;
+      --animate-fade-out: fade-out 0.2s ease-in;
+      --animate-slide-up: slide-up 0.3s ease-out;
+      --animate-slide-down: slide-down 0.3s ease-in;
+      --animate-scale-in: scale-in 0.2s ease-out;
+      --animate-pulse-soft: pulse-soft 2s ease-in-out infinite;
+      --animate-shimmer: shimmer 1.5s ease-in-out infinite;
+
+      @keyframes fade-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes fade-out {
+        from { opacity: 1; }
+        to { opacity: 0; }
+      }
+      @keyframes slide-up {
+        from { transform: translateY(0.5rem); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes slide-down {
+        from { transform: translateY(-0.5rem); opacity: 0; }
+        to { transform: translateY(0); opacity: 1; }
+      }
+      @keyframes scale-in {
+        from { transform: scale(0.95); opacity: 0; }
+        to { transform: scale(1); opacity: 1; }
+      }
+      @keyframes pulse-soft {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.6; }
+      }
+      @keyframes shimmer {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+    }
+
+    @custom-variant dark (&:where(.dark, .dark *));
+
+    .dark {
+      --color-background: oklch(12% 0.02 180);
+      --color-foreground: oklch(96% 0.01 180);
+      --color-card: oklch(16% 0.02 180);
+      --color-card-foreground: oklch(96% 0.01 180);
+      --color-muted: oklch(20% 0.02 180);
+      --color-muted-foreground: oklch(65% 0.02 180);
+      --color-border: oklch(25% 0.02 180);
+      --color-primary: oklch(60% 0.14 180);
+      --color-primary-foreground: oklch(12% 0.02 180);
+      --color-secondary: oklch(22% 0.02 180);
+      --color-secondary-foreground: oklch(96% 0.01 180);
+      --color-accent: oklch(22% 0.02 180);
+      --color-accent-foreground: oklch(96% 0.01 180);
+      --color-destructive: oklch(55% 0.2 25);
+      --color-destructive-foreground: oklch(96% 0.01 180);
+      --color-ring: oklch(60% 0.14 180);
+      --color-ring-offset: oklch(12% 0.02 180);
+    }
+
+    @layer base {
+      * {
+        @apply border-border;
+      }
+      html {
+        @apply scroll-smooth;
+      }
+      body {
+        @apply bg-background text-foreground antialiased;
+        font-family: 'Inter', system-ui, sans-serif;
+        font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Space Grotesk', system-ui, sans-serif;
+        @apply font-semibold tracking-tight;
+      }
+      ::selection {
+        @apply bg-primary/20 text-primary-foreground;
+      }
+      :focus-visible {
+        @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+          animation-duration: 0.01ms !important;
+          animation-iteration-count: 1 !important;
+          transition-duration: 0.01ms !important;
+        }
+      }
+    }
+
+    @layer components {
+      .btn {
+        @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-lg px-4 py-2.5 text-sm font-medium transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50;
+      }
+      .btn-primary {
+        @apply btn bg-primary text-primary-foreground hover:bg-primary/90 active:bg-primary shadow-sm hover:shadow-md;
+      }
+      .btn-secondary {
+        @apply btn bg-secondary text-secondary-foreground hover:bg-secondary/80 active:bg-secondary;
+      }
+      .btn-outline {
+        @apply btn border border-border bg-background hover:bg-accent hover:text-accent-foreground;
+      }
+      .btn-ghost {
+        @apply btn hover:bg-accent hover:text-accent-foreground;
+      }
+      .btn-destructive {
+        @apply btn bg-destructive text-destructive-foreground hover:bg-destructive/90;
+      }
+      .btn-icon {
+        @apply btn size-10 p-0;
+      }
+
+      .input {
+        @apply flex h-10 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 transition-all duration-200;
+      }
+      .input-error {
+        @apply border-destructive focus-visible:ring-destructive;
+      }
+
+      .card {
+        @apply rounded-xl border border-border bg-card text-card-foreground shadow-sm;
+      }
+      .card-hover {
+        @apply card transition-all duration-300 hover:shadow-lg hover:border-primary/30;
+      }
+
+      .label {
+        @apply text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70;
+      }
+
+      .badge {
+        @apply inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium transition-colors;
+      }
+      .badge-primary {
+        @apply badge bg-primary/10 text-primary;
+      }
+      .badge-secondary {
+        @apply badge bg-secondary text-secondary-foreground;
+      }
+      .badge-success {
+        @apply badge bg-green-500/10 text-green-600 dark:text-green-400;
+      }
+      .badge-warning {
+        @apply badge bg-amber-500/10 text-amber-600 dark:text-amber-400;
+      }
+      .badge-destructive {
+        @apply badge bg-destructive/10 text-destructive;
+      }
+
+      .glass {
+        @apply bg-background/80 backdrop-blur-lg border border-border/50;
+      }
+
+      .skeleton {
+        @apply animate-pulse-soft bg-muted rounded-lg;
+      }
+
+      .scrollbar-thin {
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border) transparent;
+      }
+      .scrollbar-thin::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb {
+        background-color: var(--color-border);
+        border-radius: 3px;
+      }
+      .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+        background-color: var(--color-muted-foreground);
+      }
+    }
+
+    @layer utilities {
+      .text-balance {
+        text-wrap: balance;
+      }
+      .animate-in {
+        animation: fade-in 0.2s ease-out, slide-up 0.3s ease-out;
+      }
+      .animate-out {
+        animation: fade-out 0.2s ease-in, slide-down 0.3s ease-in;
+      }
+      .bg-grid-pattern {
+        background-image:
+          linear-gradient(var(--color-border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+        background-size: 24px 24px;
+      }
+      .bg-grid-pattern-dark {
+        background-image:
+          linear-gradient(var(--color-border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--color-border) 1px, transparent 1px);
+      }
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Skip link for accessibility -->
+  <a href="#main-content" class="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 btn-primary">
+    Skip to main content
+  </a>
+
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-40 glass" style="top: env(safe-area-inset-top, 0px);">
+    <div class="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+      <!-- Logo/Brand -->
+      <div class="flex items-center gap-2">
+        <a href="#" class="flex items-center gap-2" aria-label="OpenMontage Studio Home">
+          <svg class="size-8 text-primary" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+            <rect width="32" height="32" rx="8" fill="currentColor"/>
+            <path d="M8 12h16M8 16h12M8 20h8" stroke="white" stroke-width="2.5" stroke-linecap="round"/>
+            <circle cx="24" cy="20" r="4" fill="white"/>
+          </svg>
+          <span class="text-xl font-semibold tracking-tight">OpenMontage Studio</span>
+        </a>
+      </div>
+
+      <!-- Desktop Navigation -->
+      <nav class="hidden md:flex items-center gap-1" aria-label="Main navigation">
+        <button class="btn-ghost px-3 py-2" data-tab="generate" aria-pressed="true">
+          <svg class="size-4 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3v12M12 3l4 4M12 3l-4 4M4 15h16"/><path d="M4 21h16"/></svg>
+          Generate
+        </button>
+        <button class="btn-ghost px-3 py-2" data-tab="history" aria-pressed="false">
+          <svg class="size-4 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 21V9M16 21V9"/></svg>
+          History
+        </button>
+        <button class="btn-ghost px-3 py-2" data-tab="pipelines" aria-pressed="false">
+          <svg class="size-4 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="3" width="7" height="7" rx="1"/><rect x="15" y="3" width="7" height="7" rx="1"/><rect x="2" y="14" width="7" height="7" rx="1"/><rect x="15" y="14" width="7" height="7" rx="1"/></svg>
+          Pipelines
+        </button>
+      </nav>
+
+      <!-- Right side actions -->
+      <div class="flex items-center gap-2">
+        <!-- Connection Status -->
+        <div class="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-muted/50" id="connection-status" role="status" aria-live="polite">
+          <span class="size-2 rounded-full bg-green-500" id="status-indicator"></span>
+          <span class="text-xs font-medium text-muted-foreground" id="status-text">Connected to OpenMontage</span>
+        </div>
+
+        <!-- Theme Toggle -->
+        <button class="btn-ghost size-10" id="theme-toggle" aria-label="Toggle dark mode" aria-pressed="false">
+          <svg class="size-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="absolute size-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+
+        <!-- Settings Button -->
+        <button class="btn-ghost size-10" id="settings-btn" aria-label="Settings" aria-expanded="false" aria-controls="settings-modal">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+
+        <!-- Mobile Menu Button -->
+        <button class="btn-ghost size-10 md:hidden" id="mobile-menu-btn" aria-label="Open menu" aria-expanded="false" aria-controls="mobile-menu">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Navigation -->
+    <div class="md:hidden border-t border-border bg-background/95 backdrop-blur" id="mobile-menu" hidden>
+      <nav class="px-4 py-3 flex items-center gap-2 overflow-x-auto scrollbar-thin" aria-label="Mobile navigation">
+        <button class="btn-ghost px-3 py-2 whitespace-nowrap" data-tab="generate" aria-pressed="true">Generate</button>
+        <button class="btn-ghost px-3 py-2 whitespace-nowrap" data-tab="history" aria-pressed="false">History</button>
+        <button class="btn-ghost px-3 py-2 whitespace-nowrap" data-tab="pipelines" aria-pressed="false">Pipelines</button>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Settings Modal -->
+  <dialog class="modal" id="settings-modal" aria-modal="true" aria-labelledby="settings-title">
+    <div class="modal-backdrop" tabindex="-1" aria-hidden="true"></div>
+    <div class="modal-content card max-w-md w-full mx-4">
+      <header class="flex items-center justify-between p-4 border-b border-border">
+        <h2 id="settings-title" class="text-lg font-semibold">Settings</h2>
+        <button class="btn-ghost size-10" id="settings-close" aria-label="Close settings">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </header>
+
+      <div class="p-4 space-y-6 max-h-[70vh] overflow-y-auto">
+        <!-- API Keys Section -->
+        <section>
+          <h3 class="text-sm font-medium text-muted-foreground mb-4">API Keys</h3>
+          <p class="text-sm text-muted-foreground mb-4">Configure your provider API keys. Keys are stored locally in your browser.</p>
+
+          <div class="space-y-4">
+            <!-- FAL_KEY -->
+            <div>
+              <label for="fal-key" class="label block mb-1">FAL_KEY (fal.ai)</label>
+              <div class="relative">
+                <input type="password" id="fal-key" class="input pr-10" placeholder="fal_xxx..." aria-describedby="fal-key-help">
+                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Toggle visibility">
+                  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <p id="fal-key-help" class="text-xs text-muted-foreground mt-1">Enables Seedance, Kling, MiniMax, VEO via fal.ai</p>
+            </div>
+
+            <!-- HEYGEN_API_KEY -->
+            <div>
+              <label for="heygen-key" class="label block mb-1">HEYGEN_API_KEY</label>
+              <div class="relative">
+                <input type="password" id="heygen-key" class="input pr-10" placeholder="xxx..." aria-describedby="heygen-key-help">
+                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Toggle visibility">
+                  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <p id="heygen-key-help" class="text-xs text-muted-foreground mt-1">Enables HeyGen Video Agent, Avatar Shots, VEO 3.1, Sora</p>
+            </div>
+
+            <!-- GEMINI_API_KEY -->
+            <div>
+              <label for="gemini-key" class="label block mb-1">GEMINI_API_KEY / GOOGLE_API_KEY</label>
+              <div class="relative">
+                <input type="password" id="gemini-key" class="input pr-10" placeholder="xxx..." aria-describedby="gemini-key-help">
+                <button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground" aria-label="Toggle visibility">
+                  <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                </button>
+              </div>
+              <p id="gemini-key-help" class="text-xs text-muted-foreground mt-1">Enables Gemini Omni Flash for video generation + editing</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="border-t border-border pt-4">
+          <!-- Preferences -->
+          <section>
+            <h3 class="text-sm font-medium text-muted-foreground mb-4">Preferences</h3>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-medium">Default Composition Runtime</p>
+                  <p class="text-xs text-muted-foreground">Choose preferred rendering engine</p>
+                </div>
+                <select id="default-runtime" class="input w-auto min-w-[160px]">
+                  <option value="auto">Auto (Best Available)</option>
+                  <option value="remotion">Remotion (React)</option>
+                  <option value="hyperframes">HyperFrames (HTML/GSAP)</option>
+                  <option value="ffmpeg">FFmpeg (Video Only)</option>
+                </select>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-medium">Auto-save Generations</p>
+                  <p class="text-xs text-muted-foreground">Automatically save to history</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="auto-save" class="sr-only peer" checked>
+                  <div class="w-11 h-6 bg-muted peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+
+              <div class="flex items-center justify-between">
+                <div>
+                  <p class="font-medium">Show Generation Cost</p>
+                  <p class="text-xs text-muted-foreground">Display estimated cost before generating</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" id="show-cost" class="sr-only peer" checked>
+                  <div class="w-11 h-6 bg-muted peer-focus-visible:ring-2 peer-focus-visible:ring-ring peer-focus-visible:ring-offset-2 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- OpenMontage Connection -->
+        <section class="border-t border-border pt-4">
+          <h3 class="text-sm font-medium text-muted-foreground mb-4">OpenMontage Connection</h3>
+          <div class="space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <div>
+                <p class="font-medium">Local Python Backend</p>
+                <p class="text-xs text-muted-foreground">Running on localhost:8000</p>
+              </div>
+              <span class="badge badge-success" id="backend-status">Connected</span>
+            </div>
+            <button class="btn-outline w-full" id="test-connection">Test Connection</button>
+          </div>
+        </section>
+      </div>
+
+      <footer class="flex items-center justify-end gap-2 p-4 border-t border-border">
+        <button class="btn-secondary" id="settings-cancel">Cancel</button>
+        <button class="btn-primary" id="settings-save">Save Settings</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <!-- Main Content -->
+  <main id="main-content" class="flex-1" role="main">
+    <!-- Generate Tab -->
+    <section id="tab-generate" class="tab-panel" aria-labelledby="generate-heading" role="tabpanel">
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <!-- Header -->
+        <header class="mb-8 animate-in">
+          <h1 id="generate-heading" class="text-4xl sm:text-5xl font-bold tracking-tight text-balance">Create with AI</h1>
+          <p class="mt-3 text-lg text-muted-foreground max-w-2xl">Generate videos and images using OpenMontage's pipeline system. Choose your mode, describe what you want, and let the agents handle the rest.</p>
+        </header>
+
+        <!-- Generation Type Tabs -->
+        <div class="flex gap-1 mb-6 bg-muted/50 rounded-lg p-1" role="tablist" aria-label="Generation type">
+          <button role="tab" aria-selected="true" aria-controls="panel-video" id="tab-video" class="tab-btn flex-1 px-4 py-2.5 rounded-md text-sm font-medium transition-all data-[active=true]:bg-background data-[active=true]:shadow-sm data-[active=true]:text-foreground">
+            <svg class="size-4 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M8 12l2 2 4-4"/><path d="M12 16v4"/><path d="M12 8v4"/></svg>
+            Video
+          </button>
+          <button role="tab" aria-selected="false" aria-controls="panel-image" id="tab-image" class="tab-btn flex-1 px-4 py-2.5 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <svg class="size-4 me-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+            Image
+          </button>
+        </div>
+
+        <!-- Video Generation Panel -->
+        <div id="panel-video" role="tabpanel" aria-labelledby="tab-video" hidden>
+          <div class="grid lg:grid-cols-12 gap-6">
+            <!-- Main Form -->
+            <div class="lg:col-span-8 space-y-6">
+              <!-- Prompt Input -->
+              <div class="card p-6">
+                <label for="video-prompt" class="label block mb-3">Describe your video</label>
+                <textarea id="video-prompt" class="input min-h-[120px] resize-y font-mono text-sm" placeholder="A cinematic drone shot flying over a misty coastal city at golden hour, waves crashing against cliffs, volumetric lighting, 4K" aria-describedby="video-prompt-help"></textarea>
+                <p id="video-prompt-help" class="text-xs text-muted-foreground mt-2">Be descriptive: include camera movement, lighting, style, mood, and subject details</p>
+              </div>
+
+              <!-- Example Prompts -->
+              <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-medium">Example Prompts</h3>
+                  <button class="btn-ghost text-xs" id="show-more-examples">Show more</button>
+                </div>
+                <div class="flex flex-wrap gap-2" id="video-examples">
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="A cinematic trailer for a sci-fi concept: humanity receives a warning from 1000 years in the future, dramatic lighting, epic scale">Sci-Fi Trailer</button>
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="An animated explainer about how CRISPR gene editing works, clean motion graphics, educational style">CRISPR Explainer</button>
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="A 60-second avatar spokesperson video announcing a company rebrand, professional presenter, modern office background">Avatar Announcement</button>
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="Screen recording of a dashboard workflow, polished product demo with captions and voiceover, smooth cursor movements">Product Demo</button>
+                </div>
+              </div>
+
+              <!-- Advanced Options -->
+              <div class="card p-6">
+                <h3 class="font-medium mb-4">Advanced Options</h3>
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="video-aspect" class="label block mb-1">Aspect Ratio</label>
+                    <select id="video-aspect" class="input">
+                      <option value="16:9">16:9 (Landscape)</option>
+                      <option value="9:16">9:16 (Vertical/Stories)</option>
+                      <option value="1:1">1:1 (Square)</option>
+                      <option value="4:3">4:3 (Standard)</option>
+                      <option value="21:9">21:9 (Cinematic)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="video-duration" class="label block mb-1">Duration (seconds)</label>
+                    <input type="number" id="video-duration" class="input" value="5" min="1" max="30" step="1">
+                  </div>
+                  <div>
+                    <label for="video-model" class="label block mb-1">Model / Provider</label>
+                    <select id="video-model" class="input">
+                      <option value="auto">Auto (Best Available)</option>
+                      <optgroup label="Seedance 2.0 (Premium)">
+                        <option value="seedance_2_0">Seedance 2.0 Standard</option>
+                        <option value="seedance_2_0_fast">Seedance 2.0 Fast</option>
+                      </optgroup>
+                      <optgroup label="VEO (Google)">
+                        <option value="veo_3_1">VEO 3.1</option>
+                        <option value="veo_3_1_fast">VEO 3.1 Fast</option>
+                        <option value="veo3">VEO 3</option>
+                      </optgroup>
+                      <optgroup label="Kling">
+                        <option value="kling_pro">Kling Pro</option>
+                        <option value="kling_v2">Kling V2</option>
+                      </optgroup>
+                      <optgroup label="Others">
+                        <option value="sora_v2">Sora V2</option>
+                        <option value="runway_gen4">Runway Gen-4</option>
+                        <option value="ltx_distilled">LTX Distilled (Fastest)</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="video-runtime" class="label block mb-1">Composition Runtime</label>
+                    <select id="video-runtime" class="input">
+                      <option value="auto">Auto (Best Available)</option>
+                      <option value="remotion">Remotion (React Components)</option>
+                      <option value="hyperframes">HyperFrames (HTML/GSAP)</option>
+                      <option value="ffmpeg">FFmpeg (Video Only)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Reference Image Upload -->
+                <div class="mt-4 pt-4 border-t border-border">
+                  <label for="reference-image" class="label block mb-2">Reference Image (Image-to-Video)</label>
+                  <div class="relative">
+                    <input type="file" id="reference-image" class="sr-only" accept="image/*" aria-describedby="ref-img-help">
+                    <div id="reference-dropzone" class="border-2 border-dashed border-border rounded-lg p-6 text-center hover:border-primary/50 transition-colors cursor-pointer" role="button" tabindex="0" aria-label="Upload reference image">
+                      <svg class="size-12 mx-auto text-muted-foreground mb-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                      <p class="text-sm text-muted-foreground">Drag & drop or click to upload a reference image</p>
+                      <p class="text-xs text-muted-foreground mt-1" id="ref-img-help">Optional: guides the video generation with visual reference</p>
+                    </div>
+                    <div id="reference-preview" class="hidden relative mt-3">
+                      <img id="reference-img" src="" alt="Reference image preview" class="max-h-40 rounded-lg border border-border">
+                      <button type="button" class="absolute top-2 right-2 btn-ghost size-8" aria-label="Remove reference image">
+                        <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Pipeline Selection -->
+              <div class="card p-6">
+                <h3 class="font-medium mb-4">Pipeline</h3>
+                <p class="text-sm text-muted-foreground mb-4">Choose a pipeline for structured multi-stage production</p>
+                <div class="grid sm:grid-cols-2 gap-3" id="pipeline-options">
+                  <label class="pipeline-option card-hover p-4 cursor-pointer">
+                    <input type="radio" name="pipeline" value="animated-explainer" class="sr-only peer">
+                    <div class="peer-checked:border-primary peer-checked:bg-primary/5">
+                      <div class="flex items-start gap-3">
+                        <div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12M12 3l4 4M12 3l-4 4M4 15h16"/></svg>
+                        </div>
+                        <div>
+                          <p class="font-medium">Animated Explainer</p>
+                          <p class="text-xs text-muted-foreground">Topic → fully generated explainer</p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="pipeline-option card-hover p-4 cursor-pointer">
+                    <input type="radio" name="pipeline" value="cinematic" class="sr-only peer">
+                    <div class="peer-checked:border-primary peer-checked:bg-primary/5">
+                      <div class="flex items-start gap-3">
+                        <div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M8 12l2 2 4-4"/></svg>
+                        </div>
+                        <div>
+                          <p class="font-medium">Cinematic</p>
+                          <p class="text-xs text-muted-foreground">Trailer, teaser, mood-led edits</p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="pipeline-option card-hover p-4 cursor-pointer">
+                    <input type="radio" name="pipeline" value="avatar-spokesperson" class="sr-only peer">
+                    <div class="peer-checked:border-primary peer-checked:bg-primary/5">
+                      <div class="flex items-start gap-3">
+                        <div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M12 12v8M4 20c0-4 4-6 8-6s8 2 8 6"/></svg>
+                        </div>
+                        <div>
+                          <p class="font-medium">Avatar Spokesperson</p>
+                          <p class="text-xs text-muted-foreground">Presenter-led avatar/lip-sync videos</p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="pipeline-option card-hover p-4 cursor-pointer">
+                    <input type="radio" name="pipeline" value="animation" class="sr-only peer">
+                    <div class="peer-checked:border-primary peer-checked:bg-primary/5">
+                      <div class="flex items-start gap-3">
+                        <div class="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                          <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                        </div>
+                        <div>
+                          <p class="font-medium">Animation</p>
+                          <p class="text-xs text-muted-foreground">Motion graphics, Manim, diagrams</p>
+                        </div>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Generate Button -->
+              <div class="card p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <button id="generate-video" class="btn-primary text-lg px-8 py-3" aria-busy="false">
+                      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                      <span id="generate-video-text">Generate Video</span>
+                      <svg class="size-5 animate-spin hidden" id="generate-video-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                    </button>
+                    <p class="text-xs text-muted-foreground mt-2" id="cost-estimate">Estimated cost: ~$0.50–$1.50</p>
+                  </div>
+                  <div class="flex items-center gap-3 text-sm text-muted-foreground">
+                    <span class="flex items-center gap-1">
+                      <svg class="size-4 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>
+                      Ready
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sidebar: Capabilities & Status -->
+            <div class="lg:col-span-4 space-y-6">
+              <!-- Capabilities Panel -->
+              <div class="card p-6 sticky top-24" style="top: calc(env(safe-area-inset-top, 0px) + 6rem);">
+                <h3 class="font-medium mb-4 flex items-center gap-2">
+                  <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                  Capabilities
+                </h3>
+                <div class="space-y-3" id="capabilities-list">
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <svg class="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M8 12l2 2 4-4"/></svg>
+                      </div>
+                      <div>
+                        <p class="font-medium text-sm">Video Generation</p>
+                        <p class="text-xs text-muted-foreground">0/13 configured</p>
+                      </div>
+                    </div>
+                    <span class="badge badge-destructive">Unavailable</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <svg class="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/></svg>
+                      </div>
+                      <div>
+                        <p class="font-medium text-sm">Image Generation</p>
+                        <p class="text-xs text-muted-foreground">1/7 configured</p>
+                      </div>
+                    </div>
+                    <span class="badge badge-warning">Limited</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <svg class="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-6 0Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/></svg>
+                      </div>
+                      <div>
+                        <p class="font-medium text-sm">Text-to-Speech</p>
+                        <p class="text-xs text-muted-foreground">1/3 configured</p>
+                      </div>
+                    </div>
+                    <span class="badge badge-success">Ready</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <svg class="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                      </div>
+                      <div>
+                        <p class="font-medium text-sm">Music Generation</p>
+                        <p class="text-xs text-muted-foreground">1/1 configured</p>
+                      </div>
+                    </div>
+                    <span class="badge badge-success">Ready</span>
+                  </div>
+                  <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                    <div class="flex items-center gap-3">
+                      <div class="size-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                        <svg class="size-4 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="2"/><path d="M8 12l2 2 4-4"/><path d="M12 8v8"/></svg>
+                      </div>
+                      <div>
+                        <p class="font-medium text-sm">Composition</p>
+                        <p class="text-xs text-muted-foreground">3/3 (FFmpeg, Remotion, HyperFrames)</p>
+                      </div>
+                    </div>
+                    <span class="badge badge-success">Ready</span>
+                  </div>
+                </div>
+
+                <!-- Quick Setup -->
+                <div class="mt-6 pt-6 border-t border-border">
+                  <h4 class="font-medium mb-3">Quick Setup</h4>
+                  <p class="text-sm text-muted-foreground mb-3">Add API keys in Settings to unlock more providers</p>
+                  <div class="space-y-2">
+                    <button class="btn-outline w-full justify-start text-sm" data-key="FAL_KEY">
+                      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                      Add FAL_KEY (unlocks 6 video providers)
+                    </button>
+                    <button class="btn-outline w-full justify-start text-sm" data-key="HEYGEN_API_KEY">
+                      <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                      Add HEYGEN_API_KEY (unlocks 8 video providers)
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- OpenMontage Status -->
+              <div class="card p-6 sticky top-24" style="top: calc(env(safe-area-inset-top, 0px) + 6rem + 500px);">
+                <h3 class="font-medium mb-4 flex items-center gap-2">
+                  <svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                  OpenMontage Status
+                </h3>
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Backend</span>
+                    <span class="badge badge-success" id="om-backend">Running</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Tool Registry</span>
+                    <span class="badge badge-success" id="om-registry">56 tools</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Pipelines</span>
+                    <span class="badge badge-success" id="om-pipelines">13 available</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Skills</span>
+                    <span class="badge badge-success" id="om-skills">60+ loaded</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-sm text-muted-foreground">Agents</span>
+                    <span class="badge badge-success" id="om-agents">Active</span>
+                  </div>
+                </div>
+                <button class="btn-outline w-full mt-4 text-sm" id="refresh-status">
+                  <svg class="size-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                  Refresh Status
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Image Generation Panel -->
+        <div id="panel-image" role="tabpanel" aria-labelledby="tab-image" hidden>
+          <div class="grid lg:grid-cols-12 gap-6">
+            <div class="lg:col-span-8 space-y-6">
+              <div class="card p-6">
+                <label for="image-prompt" class="label block mb-3">Describe your image</label>
+                <textarea id="image-prompt" class="input min-h-[100px] resize-y font-mono text-sm" placeholder="A futuristic cyberpunk cityscape at night, neon signs reflecting on wet streets, volumetric fog, cinematic lighting, highly detailed, 8K" aria-describedby="image-prompt-help"></textarea>
+                <p id="image-prompt-help" class="text-xs text-muted-foreground mt-2">Describe subject, style, lighting, composition, and mood</p>
+              </div>
+
+              <div class="card p-6">
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-medium">Example Prompts</h3>
+                  <button class="btn-ghost text-xs" id="show-more-image-examples">Show more</button>
+                </div>
+                <div class="flex flex-wrap gap-2" id="image-examples">
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="A minimalist product shot of a wireless earbuds case, studio lighting, clean background, commercial photography">Product Photography</button>
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="An architectural visualization of a modern sustainable house, golden hour lighting, landscaping, photorealistic">Architecture Viz</button>
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="A fantasy character portrait, intricate armor, magical glow, detailed face, dramatic lighting, digital art">Character Portrait</button>
+                  <button type="button" class="example-btn px-3 py-1.5 rounded-lg text-sm border border-border bg-background hover:bg-accent transition-colors" data-prompt="A technical diagram showing a neural network architecture, clean lines, labels, educational style, white background">Technical Diagram</button>
+                </div>
+              </div>
+
+              <div class="card p-6">
+                <h3 class="font-medium mb-4">Advanced Options</h3>
+                <div class="grid sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="image-aspect" class="label block mb-1">Aspect Ratio</label>
+                    <select id="image-aspect" class="input">
+                      <option value="1:1">1:1 (Square)</option>
+                      <option value="16:9">16:9 (Landscape)</option>
+                      <option value="9:16">9:16 (Portrait)</option>
+                      <option value="4:3">4:3</option>
+                      <option value="3:2">3:2 (Photo)</option>
+                      <option value="21:9">21:9 (Ultrawide)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="image-model" class="label block mb-1">Model</label>
+                    <select id="image-model" class="input">
+                      <option value="auto">Auto (Best Available)</option>
+                      <optgroup label="FLUX (BFL)">
+                        <option value="flux_1_1_pro">FLUX 1.1 Pro</option>
+                        <option value="flux_pro">FLUX Pro</option>
+                        <option value="flux_dev">FLUX Dev</option>
+                        <option value="flux_schnell">FLUX Schnell</option>
+                      </optgroup>
+                      <optgroup label="Others">
+                        <option value="gpt_image">GPT Image (OpenAI)</option>
+                        <option value="recraft_v3">Recraft V3</option>
+                        <option value="ideogram_v2">Ideogram V2</option>
+                      </optgroup>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="image-count" class="label block mb-1">Number of Images</label>
+                    <input type="number" id="image-count" class="input" value="1" min="1" max="4" step="1">
+                  </div>
+                  <div>
+                    <label for="image-quality" class="label block mb-1">Quality</label>
+                    <select id="image-quality" class="input">
+                      <option value="standard">Standard</option>
+                      <option value="hd">HD</option>
+                      <option value="ultra">Ultra</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                  <div>
+                    <button id="generate-image" class="btn-primary text-lg px-8 py-3" aria-busy="false">
+                      <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><path d="M21 15l-5-5L5 21"/></svg>
+                      <span id="generate-image-text">Generate Image</span>
+                      <svg class="size-5 animate-spin hidden" id="generate-image-spinner" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke-opacity="0.25"/><path d="M12 2a10 10 0 0 1 10 10"/></svg>
+                    </button>
+                    <p class="text-xs text-muted-foreground mt-2" id="image-cost-estimate">Estimated cost: ~$0.02–$0.10 per image</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-4">
+              <div class="card p-6 sticky top-24" style="top: calc(env(safe-area-inset-top, 0px) + 6rem);">
+                <h3 class="font-medium mb-4">Image Capabilities</h3>
+                <div class="space-y-3">
+                  <div class="p-3 rounded-lg bg-muted/50">
+                    <p class="font-medium text-sm">FLUX Models</p>
+                    <p class="text-xs text-muted-foreground">Best for: photorealism, text rendering, complex compositions</p>
+                  </div>
+                  <div class="p-3 rounded-lg bg-muted/50">
+                    <p class="font-medium text-sm">GPT Image</p>
+                    <p class="text-xs text-muted-foreground">Best for: instruction following, editing, consistency</p>
+                  </div>
+                  <div class="p-3 rounded-lg bg-muted/50">
+                    <p class="font-medium text-sm">Recraft V3</p>
+                    <p class="text-xs text-muted-foreground">Best for: vector art, illustrations, brand assets</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- History Tab -->
+    <section id="tab-history" class="tab-panel" aria-labelledby="history-heading" role="tabpanel" hidden>
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <header class="mb-8 animate-in">
+          <h1 id="history-heading" class="text-4xl sm:text-5xl font-bold tracking-tight text-balance">Generation History</h1>
+          <p class="mt-3 text-lg text-muted-foreground">Your recent video and image generations</p>
+        </header>
+
+        <div class="card">
+          <div class="overflow-x-auto">
+            <table class="w-full" role="table">
+              <thead class="bg-muted/50">
+                <tr>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Preview</th>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Prompt</th>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Type</th>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Model</th>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Status</th>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Created</th>
+                  <th class="px-4 py-3 text-left text-sm font-medium text-muted-foreground">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="history-body" class="divide-y divide-border">
+                <!-- Empty state -->
+                <tr id="history-empty">
+                  <td colspan="7" class="px-4 py-12 text-center">
+                    <svg class="size-16 mx-auto text-muted-foreground/50 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                    <p class="text-muted-foreground">No generations yet</p>
+                    <p class="text-sm text-muted-foreground mt-1">Create your first video or image to see it here</p>
+                    <button class="btn-primary mt-4" data-tab="generate">Start Generating</button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pipelines Tab -->
+    <section id="tab-pipelines" class="tab-panel" aria-labelledby="pipelines-heading" role="tabpanel" hidden>
+      <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <header class="mb-8 animate-in">
+          <h1 id="pipelines-heading" class="text-4xl sm:text-5xl font-bold tracking-tight text-balance">OpenMontage Pipelines</h1>
+          <p class="mt-3 text-lg text-muted-foreground">Structured multi-stage video production workflows</p>
+        </header>
+
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="pipelines-grid">
+          <!-- Pipeline cards will be populated by JS -->
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="border-t border-border bg-background/50 backdrop-blur" style="padding-bottom: env(safe-area-inset-bottom, 0px);">
+    <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <p class="text-sm text-muted-foreground">OpenMontage Studio — Powered by OpenMontage AI Video Pipeline</p>
+        <div class="flex items-center gap-4 text-sm text-muted-foreground">
+          <a href="#" class="hover:text-foreground transition-colors">Documentation</a>
+          <a href="#" class="hover:text-foreground transition-colors">GitHub</a>
+          <a href="#" class="hover:text-foreground transition-colors">Discord</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Toast Container -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2" aria-live="polite" aria-label="Notifications"></div>
+
+  <!-- Generation Progress Modal -->
+  <dialog class="modal" id="progress-modal" aria-modal="true" aria-labelledby="progress-title">
+    <div class="modal-backdrop" tabindex="-1" aria-hidden="true"></div>
+    <div class="modal-content card max-w-md w-full mx-4">
+      <header class="flex items-center justify-between p-4 border-b border-border">
+        <h2 id="progress-title" class="text-lg font-semibold">Generating...</h2>
+        <button class="btn-ghost size-10" id="progress-close" aria-label="Close" disabled>
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </header>
+      <div class="p-4 space-y-4">
+        <div class="flex items-center gap-3">
+          <div class="size-12 rounded-full border-4 border-primary/20 border-t-primary animate-spin" aria-hidden="true"></div>
+          <div>
+            <p class="font-medium" id="progress-stage">Initializing...</p>
+            <p class="text-sm text-muted-foreground" id="progress-detail">Preparing pipeline</p>
+          </div>
+        </div>
+        <div class="h-2 bg-muted rounded-full overflow-hidden">
+          <div class="h-full bg-primary rounded-full transition-all duration-300" id="progress-bar" style="width: 0%"></div>
+        </div>
+        <p class="text-xs text-muted-foreground text-center" id="progress-time">Estimated time: --</p>
+      </div>
+    </div>
+  </dialog>
+
+  <!-- Result Modal -->
+  <dialog class="modal" id="result-modal" aria-modal="true" aria-labelledby="result-title">
+    <div class="modal-backdrop" tabindex="-1" aria-hidden="true"></div>
+    <div class="modal-content card max-w-2xl w-full mx-4 max-h-[90vh]">
+      <header class="flex items-center justify-between p-4 border-b border-border sticky top-0 bg-card/95 backdrop-blur z-10">
+        <h2 id="result-title" class="text-lg font-semibold">Generation Complete</h2>
+        <button class="btn-ghost size-10" id="result-close" aria-label="Close">
+          <svg class="size-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </header>
+      <div class="p-4 overflow-y-auto" id="result-content">
+        <!-- Content populated dynamically -->
+      </div>
+      <footer class="flex items-center justify-end gap-2 p-4 border-t border-border sticky bottom-0 bg-card/95 backdrop-blur z-10">
+        <button class="btn-secondary" id="result-download">
+          <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Download
+        </button>
+        <button class="btn-outline" id="result-regenerate">Regenerate</button>
+        <button class="btn-primary" id="result-save">Save to History</button>
+      </footer>
+    </div>
+  </dialog>
+
+  <script>
+    // ============================================
+    // OpenMontage Studio - Main Application Logic
+    // ============================================
+
+    (function() {
+      'use strict';
+
+      // ----- State Management -----
+      const state = {
+        theme: 'system',
+        activeTab: 'generate',
+        activeGenType: 'video',
+        history: [],
+        capabilities: {},
+        pipelines: [],
+        settings: {
+          apiKeys: {},
+          defaultRuntime: 'auto',
+          autoSave: true,
+          showCost: true
+        },
+        currentGeneration: null
+      };
+
+      // ----- DOM Elements -----
+      const els = {
+        // Navigation
+        navTabs: document.querySelectorAll('[data-tab]'),
+        tabPanels: document.querySelectorAll('.tab-panel'),
+        mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+        mobileMenu: document.getElementById('mobile-menu'),
+
+        // Theme
+        themeToggle: document.getElementById('theme-toggle'),
+
+        // Settings
+        settingsBtn: document.getElementById('settings-btn'),
+        settingsModal: document.getElementById('settings-modal'),
+        settingsClose: document.getElementById('settings-close'),
+        settingsCancel: document.getElementById('settings-cancel'),
+        settingsSave: document.getElementById('settings-save'),
+
+        // Generation Type Tabs
+        tabVideo: document.getElementById('tab-video'),
+        tabImage: document.getElementById('tab-image'),
+        panelVideo: document.getElementById('panel-video'),
+        panelImage: document.getElementById('panel-image'),
+
+        // Video Generation
+        videoPrompt: document.getElementById('video-prompt'),
+        videoExamples: document.getElementById('video-examples'),
+        videoAspect: document.getElementById('video-aspect'),
+        videoDuration: document.getElementById('video-duration'),
+        videoModel: document.getElementById('video-model'),
+        videoRuntime: document.getElementById('video-runtime'),
+        referenceImage: document.getElementById('reference-image'),
+        referenceDropzone: document.getElementById('reference-dropzone'),
+        referencePreview: document.getElementById('reference-preview'),
+        referenceImg: document.getElementById('reference-img'),
+        pipelineOptions: document.getElementById('pipeline-options'),
+        generateVideo: document.getElementById('generate-video'),
+        generateVideoText: document.getElementById('generate-video-text'),
+        generateVideoSpinner: document.getElementById('generate-video-spinner'),
+        costEstimate: document.getElementById('cost-estimate'),
+
+        // Image Generation
+        imagePrompt: document.getElementById('image-prompt'),
+        imageExamples: document.getElementById('image-examples'),
+        imageAspect: document.getElementById('image-aspect'),
+        imageModel: document.getElementById('image-model'),
+        imageCount: document.getElementById('image-count'),
+        imageQuality: document.getElementById('image-quality'),
+        generateImage: document.getElementById('generate-image'),
+        generateImageText: document.getElementById('generate-image-text'),
+        generateImageSpinner: document.getElementById('generate-image-spinner'),
+
+        // History
+        historyBody: document.getElementById('history-body'),
+        historyEmpty: document.getElementById('history-empty'),
+
+        // Pipelines
+        pipelinesGrid: document.getElementById('pipelines-grid'),
+
+        // Progress Modal
+        progressModal: document.getElementById('progress-modal'),
+        progressClose: document.getElementById('progress-close'),
+        progressStage: document.getElementById('progress-stage'),
+        progressDetail: document.getElementById('progress-detail'),
+        progressBar: document.getElementById('progress-bar'),
+        progressTime: document.getElementById('progress-time'),
+
+        // Result Modal
+        resultModal: document.getElementById('result-modal'),
+        resultClose: document.getElementById('result-close'),
+        resultContent: document.getElementById('result-content'),
+        resultDownload: document.getElementById('result-download'),
+        resultRegenerate: document.getElementById('result-regenerate'),
+        resultSave: document.getElementById('result-save'),
+
+        // Toast
+        toastContainer: document.getElementById('toast-container'),
+
+        // Settings Form
+        falKey: document.getElementById('fal-key'),
+        heygenKey: document.getElementById('heygen-key'),
+        geminiKey: document.getElementById('gemini-key'),
+        defaultRuntime: document.getElementById('default-runtime'),
+        autoSave: document.getElementById('auto-save'),
+        showCost: document.getElementById('show-cost'),
+        testConnection: document.getElementById('test-connection'),
+        refreshStatus: document.getElementById('refresh-status'),
+
+        // Connection Status
+        statusIndicator: document.getElementById('status-indicator'),
+        statusText: document.getElementById('status-text')
+      };
+
+      // ----- Pipeline Data -----
+      const pipelineData = [
+        { id: 'animated-explainer', name: 'Animated Explainer', desc: 'Topic → fully generated explainer', icon: 'M12 3v12M12 3l4 4M12 3l-4 4M4 15h16', status: 'production', category: 'Video' },
+        { id: 'cinematic', name: 'Cinematic', desc: 'Trailer, teaser, mood-led edits', icon: 'M2 2h20v20H2zM8 12l2 2 4-4', status: 'production', category: 'Video' },
+        { id: 'avatar-spokesperson', name: 'Avatar Spokesperson', desc: 'Presenter-led avatar/lip-sync videos', icon: 'M12 8a4 4 0 0 1 4 4v8M12 8a4 4 0 0 0-4 4v8M4 20c0-4 4-6 8-6s8 2 8 6', status: 'production', category: 'Video' },
+        { id: 'animation', name: 'Animation', desc: 'Motion graphics, Manim, diagrams', icon: 'M12 12a10 10 0 0 0 10 10M12 6v6l4 2', status: 'production', category: 'Video' },
+        { id: 'talking-head', name: 'Talking Head', desc: 'Footage-led speaker videos', icon: 'M12 8a4 4 0 0 1 4 4v8M4 20c0-4 4-6 8-6s8 2 8 6', status: 'beta', category: 'Video' },
+        { id: 'screen-demo', name: 'Screen Demo', desc: 'Screen recordings and walkthroughs', icon: 'M2 2h20v20H2zM8 8h12v12H8z', status: 'production', category: 'Video' },
+        { id: 'clip-factory', name: 'Clip Factory', desc: 'Many clips from one long source', icon: 'M2 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H2zM22 3h-6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6z', status: 'beta', category: 'Video' },
+        { id: 'podcast-repurpose', name: 'Podcast Repurpose', desc: 'Podcast highlights and derivatives', icon: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-6 0zM19 10v2a7 7 0 0 1-14 0v-2', status: 'beta', category: 'Audio' },
+        { id: 'hybrid', name: 'Hybrid', desc: 'Source footage plus support visuals', icon: 'M2 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H2zM22 3h-6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6z', status: 'production', category: 'Video' },
+        { id: 'localization-dub', name: 'Localization Dub', desc: 'Subtitle, dub, and translated variants', icon: 'M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-6 0zM19 10v2a7 7 0 0 1-14 0v-2', status: 'beta', category: 'Video' },
+        { id: 'documentary-montage', name: 'Documentary Montage', desc: 'Real-footage thematic montage', icon: 'M2 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H2zM22 3h-6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h6z', status: 'beta', category: 'Video' },
+        { id: 'character-animation', name: 'Character Animation', desc: 'Local rigged cartoon characters', icon: 'M12 8a4 4 0 0 1 4 4v8M4 20c0-4 4-6 8-6s8 2 8 6', status: 'beta', category: 'Video' }
+      ];
+
+      // ----- Utility Functions -----
+      const $ = (sel, ctx = document) => ctx.querySelector(sel);
+      const $$ = (sel, ctx = document) => Array.from(ctx.querySelectorAll(sel));
+
+      function showToast(message, type = 'info', duration = 4000) {
+        const toast = document.createElement('div');
+        toast.className = `card p-4 flex items-center gap-3 min-w-[280px] max-w-[400px] animate-in shadow-lg border-l-4 ${
+          type === 'success' ? 'border-green-500' :
+          type === 'error' ? 'border-destructive' :
+          type === 'warning' ? 'border-amber-500' :
+          'border-primary'
+        }`;
+
+        const icons = {
+          success: '<svg class="size-5 text-green-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M8 12l2 2 4-4"/></svg>',
+          error: '<svg class="size-5 text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>',
+          warning: '<svg class="size-5 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>',
+          info: '<svg class="size-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>'
+        };
+
+        toast.innerHTML = `${icons[type]}<span class="flex-1 text-sm">${message}</span><button class="btn-ghost size-8 text-muted-foreground hover:text-foreground" aria-label="Dismiss"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>`;
+
+        toast.querySelector('button').addEventListener('click', () => toast.remove());
+        els.toastContainer.appendChild(toast);
+
+        if (duration > 0) {
+          setTimeout(() => toast.classList.add('animate-out'), duration - 200);
+          setTimeout(() => toast.remove(), duration);
+        }
+
+        return toast;
+      }
+
+      function setLoading(button, textEl, spinnerEl, loading, originalText) {
+        button.disabled = loading;
+        button.setAttribute('aria-busy', loading);
+        if (loading) {
+          textEl.textContent = originalText || 'Generating...';
+          textEl.classList.add('hidden');
+          spinnerEl.classList.remove('hidden');
+        } else {
+          textEl.textContent = originalText || 'Generate';
+          textEl.classList.remove('hidden');
+          spinnerEl.classList.add('hidden');
+        }
+      }
+
+      // ----- Theme Management -----
+      function initTheme() {
+        const saved = localStorage.getItem('theme') || 'system';
+        state.theme = saved;
+        applyTheme(saved);
+        updateThemeIcon(saved);
+      }
+
+      function applyTheme(theme) {
+        const root = document.documentElement;
+        root.classList.remove('light', 'dark');
+
+        if (theme === 'system') {
+          const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          root.classList.add(prefersDark ? 'dark' : 'light');
+        } else {
+          root.classList.add(theme);
+        }
+      }
+
+      function updateThemeIcon(theme) {
+        const icon = els.themeToggle;
+        icon.setAttribute('aria-pressed', theme === 'dark');
+      }
+
+      function toggleTheme() {
+        const themes = ['light', 'dark', 'system'];
+        const currentIndex = themes.indexOf(state.theme);
+        const nextTheme = themes[(currentIndex + 1) % themes.length];
+        state.theme = nextTheme;
+        localStorage.setItem('theme', nextTheme);
+        applyTheme(nextTheme);
+        updateThemeIcon(nextTheme);
+      }
+
+      // ----- Settings Management -----
+      function loadSettings() {
+        try {
+          const saved = localStorage.getItem('om-settings');
+          if (saved) {
+            state.settings = { ...state.settings, ...JSON.parse(saved) };
+          }
+        } catch (e) {
+          console.warn('Failed to load settings:', e);
+        }
+        applySettingsToUI();
+      }
+
+      function applySettingsToUI() {
+        els.falKey.value = state.settings.apiKeys.FAL_KEY || '';
+        els.heygenKey.value = state.settings.apiKeys.HEYGEN_API_KEY || '';
+        els.geminiKey.value = state.settings.apiKeys.GEMINI_API_KEY || '';
+        els.defaultRuntime.value = state.settings.defaultRuntime || 'auto';
+        els.autoSave.checked = state.settings.autoSave !== false;
+        els.showCost.checked = state.settings.showCost !== false;
+      }
+
+      function saveSettings() {
+        state.settings.apiKeys = {
+          FAL_KEY: els.falKey.value.trim(),
+          HEYGEN_API_KEY: els.heygenKey.value.trim(),
+          GEMINI_API_KEY: els.geminiKey.value.trim()
+        };
+        state.settings.defaultRuntime = els.defaultRuntime.value;
+        state.settings.autoSave = els.autoSave.checked;
+        state.settings.showCost = els.showCost.checked;
+
+        localStorage.setItem('om-settings', JSON.stringify(state.settings));
+        showToast('Settings saved', 'success');
+        closeSettingsModal();
+        updateCapabilitiesDisplay();
+      }
+
+      // ----- Modal Management -----
+      function openSettingsModal() {
+        els.settingsModal.showModal();
+        els.settingsBtn.setAttribute('aria-expanded', 'true');
+        document.body.style.overflow = 'hidden';
+        els.settingsClose.focus();
+      }
+
+      function closeSettingsModal() {
+        els.settingsModal.close();
+        els.settingsBtn.setAttribute('aria-expanded', 'false');
+        document.body.style.overflow = '';
+      }
+
+      function showProgressModal(stage, detail) {
+        els.progressStage.textContent = stage;
+        els.progressDetail.textContent = detail;
+        els.progressBar.style.width = '0%';
+        els.progressModal.showModal();
+        document.body.style.overflow = 'hidden';
+      }
+
+      function updateProgress(percent, stage, detail) {
+        els.progressBar.style.width = `${percent}%`;
+        if (stage) els.progressStage.textContent = stage;
+        if (detail) els.progressDetail.textContent = detail;
+      }
+
+      function hideProgressModal() {
+        els.progressModal.close();
+        document.body.style.overflow = '';
+      }
+
+      function showResultModal(content, type) {
+        els.resultContent.innerHTML = content;
+        els.resultModal.showModal();
+        document.body.style.overflow = 'hidden';
+        els.resultClose.focus();
+      }
+
+      function hideResultModal() {
+        els.resultModal.close();
+        document.body.style.overflow = '';
+      }
+
+      // ----- Tab Navigation -----
+      function switchTab(tabName) {
+        state.activeTab = tabName;
+
+        // Update nav tabs
+        els.navTabs.forEach(btn => {
+          const isActive = btn.dataset.tab === tabName;
+          btn.setAttribute('aria-pressed', isActive);
+          btn.classList.toggle('bg-background', isActive);
+          btn.classList.toggle('shadow-sm', isActive);
+          btn.classList.toggle('text-foreground', isActive);
+          btn.classList.toggle('text-muted-foreground', !isActive);
+        });
+
+        // Update panels
+        els.tabPanels.forEach(panel => {
+          const isActive = panel.id === `tab-${tabName}`;
+          panel.hidden = !isActive;
+          if (isActive) {
+            panel.classList.add('animate-in');
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
+        });
+
+        // Close mobile menu
+        els.mobileMenu.hidden = true;
+        els.mobileMenuBtn.setAttribute('aria-expanded', 'false');
+
+        // Load tab-specific data
+        if (tabName === 'history') loadHistory();
+        if (tabName === 'pipelines') renderPipelines();
+      }
+
+      function switchGenType(type) {
+        state.activeGenType = type;
+        const isVideo = type === 'video';
+
+        els.tabVideo.setAttribute('aria-selected', isVideo);
+        els.tabImage.setAttribute('aria-selected', !isVideo);
+        els.tabVideo.classList.toggle('bg-background', isVideo);
+        els.tabVideo.classList.toggle('shadow-sm', isVideo);
+        els.tabVideo.classList.toggle('text-foreground', isVideo);
+        els.tabVideo.classList.toggle('text-muted-foreground', !isVideo);
+        els.tabImage.classList.toggle('bg-background', !isVideo);
+        els.tabImage.classList.toggle('shadow-sm', !isVideo);
+        els.tabImage.classList.toggle('text-foreground', !isVideo);
+        els.tabImage.classList.toggle('text-muted-foreground', isVideo);
+
+        els.panelVideo.hidden = !isVideo;
+        els.panelImage.hidden = isVideo;
+      }
+
+      // ----- History Management -----
+      function loadHistory() {
+        try {
+          const saved = localStorage.getItem('om-history');
+          state.history = saved ? JSON.parse(saved) : [];
+        } catch (e) {
+          state.history = [];
+        }
+        renderHistory();
+      }
+
+      function saveHistory() {
+        localStorage.setItem('om-history', JSON.stringify(state.history.slice(0, 50)));
+      }
+
+      function addToHistory(item) {
+        state.history.unshift({
+          ...item,
+          id: Date.now().toString(),
+          timestamp: new Date().toISOString()
+        });
+        saveHistory();
+        if (state.activeTab === 'history') renderHistory();
+      }
+
+      function renderHistory() {
+        if (state.history.length === 0) {
+          els.historyBody.innerHTML = `
+            <tr id="history-empty">
+              <td colspan="7" class="px-4 py-12 text-center">
+                <svg class="size-16 mx-auto text-muted-foreground/50 mb-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+                <p class="text-muted-foreground">No generations yet</p>
+                <p class="text-sm text-muted-foreground mt-1">Create your first video or image to see it here</p>
+                <button class="btn-primary mt-4" onclick="switchTab('generate')">Start Generating</button>
+              </td>
+            </tr>
+          `;
+          return;
+        }
+
+        els.historyBody.innerHTML = state.history.map(item => `
+          <tr class="hover:bg-muted/50 transition-colors">
+            <td class="px-4 py-3">
+              ${item.type === 'video'
+                ? `<video src="${item.url}" class="size-16 rounded-lg object-cover" muted loop playsinline></video>`
+                : `<img src="${item.url}" class="size-16 rounded-lg object-cover" alt="${item.prompt.slice(0, 50)}">`}
+            </td>
+            <td class="px-4 py-3 max-w-xs">
+              <p class="text-sm truncate" title="${item.prompt}">${item.prompt}</p>
+            </td>
+            <td class="px-4 py-3">
+              <span class="badge ${item.type === 'video' ? 'badge-primary' : 'badge-secondary'}">${item.type}</span>
+            </td>
+            <td class="px-4 py-3 text-sm text-muted-foreground">${item.model || 'auto'}</td>
+            <td class="px-4 py-3">
+              <span class="badge badge-success">Complete</span>
+            </td>
+            <td class="px-4 py-3 text-sm text-muted-foreground">${new Date(item.timestamp).toLocaleDateString()}</td>
+            <td class="px-4 py-3">
+              <div class="flex items-center gap-1">
+                <button class="btn-ghost size-8" onclick="downloadResult('${item.url}', '${item.type}')" aria-label="Download"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg></button>
+                <button class="btn-ghost size-8" onclick="regenerateItem('${item.id}')" aria-label="Regenerate"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 4v6h-6"/><path d="M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg></button>
+                <button class="btn-ghost size-8" onclick="deleteHistoryItem('${item.id}')" aria-label="Delete"><svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button>
+              </div>
+            </td>
+          </tr>
+        `).join('');
+      }
+
+      // ----- Pipeline Rendering -----
+      function renderPipelines() {
+        els.pipelinesGrid.innerHTML = pipelineData.map(p => `
+          <article class="card-hover p-6 cursor-pointer" tabindex="0" role="button" aria-label="Learn more about ${p.name} pipeline" onclick="showPipelineDetail('${p.id}')">
+            <div class="size-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+              <svg class="size-6 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">${p.icon}</svg>
+            </div>
+            <h3 class="font-semibold text-lg mb-2">${p.name}</h3>
+            <p class="text-sm text-muted-foreground mb-4">${p.desc}</p>
+            <div class="flex items-center justify-between">
+              <span class="badge ${p.status === 'production' ? 'badge-success' : 'badge-warning'}">${p.status}</span>
+              <span class="badge badge-secondary">${p.category}</span>
+            </div>
+          </article>
+        `).join('');
+      }
+
+      // ----- Capabilities Display -----
+      function updateCapabilitiesDisplay() {
+        // This would connect to actual OpenMontage backend
+        // For now, update based on API keys
+        const hasFalKey = !!state.settings.apiKeys.FAL_KEY;
+        const hasHeyGenKey = !!state.settings.apiKeys.HEYGEN_API_KEY;
+        const hasGeminiKey = !!state.settings.apiKeys.GEMINI_API_KEY;
+
+        const videoCount = (hasFalKey ? 6 : 0) + (hasHeyGenKey ? 8 : 0) + (hasGeminiKey ? 1 : 0);
+
+        // Update UI elements
+        const capsList = document.getElementById('capabilities-list');
+        if (capsList) {
+          capsList.querySelectorAll('.badge').forEach((badge, i) => {
+            if (i === 0) { // Video Generation
+              badge.textContent = videoCount > 0 ? `${videoCount} providers` : 'Unavailable';
+              badge.className = `badge ${videoCount > 0 ? 'badge-success' : 'badge-destructive'}`;
+            }
+          });
+        }
+
+        // Update connection status
+        const connected = hasFalKey || hasHeyGenKey || hasGeminiKey;
+        els.statusIndicator.className = `size-2 rounded-full ${connected ? 'bg-green-500' : 'bg-amber-500'}`;
+        els.statusText.textContent = connected ? 'Connected to OpenMontage' : 'Configure API keys in Settings';
+      }
+
+      // ----- Generation Logic (Mock) -----
+      async function generateVideo() {
+        const prompt = els.videoPrompt.value.trim();
+        if (!prompt) {
+          showToast('Please enter a prompt', 'warning');
+          els.videoPrompt.focus();
+          return;
+        }
+
+        const aspect = els.videoAspect.value;
+        const duration = parseInt(els.videoDuration.value) || 5;
+        const model = els.videoModel.value;
+        const runtime = els.videoRuntime.value;
+        const pipeline = document.querySelector('input[name="pipeline"]:checked')?.value || 'animated-explainer';
+        const refFile = els.referenceImage.files[0];
+
+        setLoading(els.generateVideo, els.generateVideoText, els.generateVideoSpinner, true);
+
+        showProgressModal('Initializing pipeline', `Starting ${pipeline} pipeline...`);
+
+        // Simulate pipeline stages
+        const stages = [
+          { stage: 'Research', detail: 'Gathering information and references', progress: 10 },
+          { stage: 'Script Writing', detail: 'Creating narrative structure', progress: 25 },
+          { stage: 'Scene Planning', detail: 'Designing visual sequence', progress: 40 },
+          { stage: 'Asset Generation', detail: `Generating video with ${model}`, progress: 60 },
+          { stage: 'Composition', detail: `Rendering with ${runtime}`, progress: 80 },
+          { stage: 'Finalizing', detail: 'Encoding and optimization', progress: 95 }
+        ];
+
+        for (const s of stages) {
+          updateProgress(s.progress, s.stage, s.detail);
+          await new Promise(r => setTimeout(r, 800 + Math.random() * 500));
+        }
+
+        updateProgress(100, 'Complete', 'Video generated successfully');
+        await new Promise(r => setTimeout(r, 500));
+
+        hideProgressModal();
+        setLoading(els.generateVideo, els.generateVideoText, els.generateVideoSpinner, false);
+
+        // Mock result
+        const resultUrl = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+        const cost = '$' + (0.5 + Math.random() * 1.0).toFixed(2);
+
+        showResultModal(`
+          <div class="aspect-video bg-muted rounded-lg overflow-hidden relative">
+            <video src="${resultUrl}" class="w-full h-full object-cover" controls playsinline></video>
+            ${refFile ? '<span class="absolute top-2 right-2 badge badge-primary">Image-to-Video</span>' : ''}
+          </div>
+          <div class="mt-4 space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Prompt</span>
+              <span class="text-sm font-mono truncate max-w-[200px]">${prompt}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Model</span>
+              <span class="text-sm font-medium">${model}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Runtime</span>
+              <span class="text-sm font-medium">${runtime}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Duration</span>
+              <span class="text-sm font-medium">${duration}s</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Aspect Ratio</span>
+              <span class="text-sm font-medium">${aspect}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Pipeline</span>
+              <span class="text-sm font-medium">${pipeline}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Estimated Cost</span>
+              <span class="text-sm font-medium text-primary">${cost}</span>
+            </div>
+          </div>
+        `, 'video');
+
+        // Store for save
+        state.currentGeneration = {
+          type: 'video',
+          prompt,
+          url: resultUrl,
+          model,
+          runtime,
+          duration,
+          aspect,
+          pipeline,
+          cost
+        };
+
+        showToast('Video generated successfully!', 'success');
+      }
+
+      async function generateImage() {
+        const prompt = els.imagePrompt.value.trim();
+        if (!prompt) {
+          showToast('Please enter a prompt', 'warning');
+          els.imagePrompt.focus();
+          return;
+        }
+
+        const aspect = els.imageAspect.value;
+        const model = els.imageModel.value;
+        const count = parseInt(els.imageCount.value) || 1;
+        const quality = els.imageQuality.value;
+
+        setLoading(els.generateImage, els.generateImageText, els.generateImageSpinner, true);
+
+        showProgressModal('Generating Images', `Creating ${count} image(s) with ${model}...`);
+
+        const stages = [
+          { stage: 'Prompt Enhancement', detail: 'Optimizing prompt for quality', progress: 20 },
+          { stage: 'Image Generation', detail: `Generating with ${model} (${quality})`, progress: 60 },
+          { stage: 'Post-processing', detail: 'Applying enhancements', progress: 85 }
+        ];
+
+        for (const s of stages) {
+          updateProgress(s.progress, s.stage, s.detail);
+          await new Promise(r => setTimeout(r, 600 + Math.random() * 400));
+        }
+
+        updateProgress(100, 'Complete', 'Images generated successfully');
+        await new Promise(r => setTimeout(r, 500));
+
+        hideProgressModal();
+        setLoading(els.generateImage, els.generateImageText, els.generateImageSpinner, false);
+
+        // Mock results - use placeholder images
+        const images = Array.from({ length: count }, (_, i) =>
+          `https://picsum.photos/seed/${Date.now() + i}/1024/1024`
+        );
+
+        const cost = '$' + (0.02 * count + Math.random() * 0.08).toFixed(3);
+
+        showResultModal(`
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            ${images.map((url, i) => `
+              <div class="aspect-square bg-muted rounded-lg overflow-hidden relative group">
+                <img src="${url}" class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105" alt="Generated image ${i + 1}" loading="lazy">
+                <div class="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <button class="btn-primary" onclick="downloadImage('${url}')">
+                    <svg class="size-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                  </button>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <div class="mt-4 space-y-3">
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Prompt</span>
+              <span class="text-sm font-mono truncate max-w-[200px]">${prompt}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Model</span>
+              <span class="text-sm font-medium">${model}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Count</span>
+              <span class="text-sm font-medium">${count}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Quality</span>
+              <span class="text-sm font-medium">${quality}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Aspect Ratio</span>
+              <span class="text-sm font-medium">${aspect}</span>
+            </div>
+            <div class="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+              <span class="text-sm text-muted-foreground">Estimated Cost</span>
+              <span class="text-sm font-medium text-primary">${cost}</span>
+            </div>
+          </div>
+        `, 'image');
+
+        state.currentGeneration = {
+          type: 'image',
+          prompt,
+          url: images[0],
+          urls: images,
+          model,
+          count,
+          quality,
+          aspect,
+          cost
+        };
+
+        showToast(`${count} image(s) generated successfully!`, 'success');
+      }
+
+      // ----- Event Handlers -----
+      function handleExampleClick(e) {
+        const btn = e.target.closest('.example-btn');
+        if (!btn) return;
+        const prompt = btn.dataset.prompt;
+        if (state.activeGenType === 'video') {
+          els.videoPrompt.value = prompt;
+          els.videoPrompt.focus();
+        } else {
+          els.imagePrompt.value = prompt;
+          els.imagePrompt.focus();
+        }
+      }
+
+      function handleReferenceImage(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+          showToast('Please select an image file', 'warning');
+          els.referenceImage.value = '';
+          return;
+        }
+
+        if (file.size > 10 * 1024 * 1024) {
+          showToast('Image must be less than 10MB', 'warning');
+          els.referenceImage.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          els.referenceImg.src = e.target.result;
+          els.referenceDropzone.hidden = true;
+          els.referencePreview.hidden = false;
+        };
+        reader.readAsDataURL(file);
+      }
+
+      function removeReferenceImage() {
+        els.referenceImage.value = '';
+        els.referenceDropzone.hidden = false;
+        els.referencePreview.hidden = true;
+        els.referenceImg.src = '';
+      }
+
+      function handleDropzoneClick(e) {
+        if (e.target === els.referenceDropzone || els.referenceDropzone.contains(e.target)) {
+          els.referenceImage.click();
+        }
+      }
+
+      function handleDropzoneKeydown(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          els.referenceImage.click();
+        }
+      }
+
+      function handleDragOver(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        els.referenceDropzone.classList.add('border-primary', 'bg-primary/5');
+      }
+
+      function handleDragLeave(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        els.referenceDropzone.classList.remove('border-primary', 'bg-primary/5');
+      }
+
+      function handleDrop(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        els.referenceDropzone.classList.remove('border-primary', 'bg-primary/5');
+
+        const file = e.dataTransfer.files[0];
+        if (file && file.type.startsWith('image/')) {
+          els.referenceImage.files = e.dataTransfer.files;
+          handleReferenceImage({ target: els.referenceImage });
+        }
+      }
+
+      function downloadResult(url, type) {
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${type}-${Date.now()}.${type === 'video' ? 'mp4' : 'png'}`;
+        a.target = '_blank';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Download started', 'success');
+      }
+
+      function downloadImage(url) {
+        downloadResult(url, 'image');
+      }
+
+      function saveCurrentGeneration() {
+        if (!state.currentGeneration) return;
+
+        addToHistory(state.currentGeneration);
+        showToast('Saved to history', 'success');
+        hideResultModal();
+
+        if (state.activeTab !== 'history') {
+          switchTab('history');
+        }
+      }
+
+      function regenerateCurrent() {
+        hideResultModal();
+        if (state.currentGeneration?.type === 'video') {
+          generateVideo();
+        } else {
+          generateImage();
+        }
+      }
+
+      function regenerateItem(id) {
+        const item = state.history.find(h => h.id === id);
+        if (!item) return;
+
+        if (item.type === 'video') {
+          els.videoPrompt.value = item.prompt;
+          els.videoAspect.value = item.aspect || '16:9';
+          els.videoDuration.value = item.duration || 5;
+          els.videoModel.value = item.model || 'auto';
+          els.videoRuntime.value = item.runtime || 'auto';
+          switchTab('generate');
+          switchGenType('video');
+          generateVideo();
+        } else {
+          els.imagePrompt.value = item.prompt;
+          els.imageAspect.value = item.aspect || '1:1';
+          els.imageModel.value = item.model || 'auto';
+          els.imageCount.value = item.count || 1;
+          els.imageQuality.value = item.quality || 'standard';
+          switchTab('generate');
+          switchGenType('image');
+          generateImage();
+        }
+      }
+
+      function deleteHistoryItem(id) {
+        state.history = state.history.filter(h => h.id !== id);
+        saveHistory();
+        renderHistory();
+        showToast('Removed from history', 'success');
+      }
+
+      function testConnection() {
+        const btn = els.testConnection;
+        const originalText = btn.textContent;
+        btn.textContent = 'Testing...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+          showToast('Connection successful! Backend responded.', 'success');
+
+          // Update status badges
+          document.querySelectorAll('#om-backend, #om-registry, #om-pipelines, #om-skills, #om-agents').forEach(el => {
+            el.className = 'badge badge-success';
+          });
+        }, 1500);
+      }
+
+      function refreshStatus() {
+        const btn = els.refreshStatus;
+        const originalText = btn.textContent;
+        btn.textContent = 'Refreshing...';
+        btn.disabled = true;
+
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.disabled = false;
+          showToast('Status refreshed', 'success');
+        }, 1000);
+      }
+
+      // ----- Keyboard Shortcuts -----
+      function handleKeydown(e) {
+        // Escape to close modals
+        if (e.key === 'Escape') {
+          if (!els.settingsModal.hidden) closeSettingsModal();
+          if (!els.progressModal.hidden) hideProgressModal();
+          if (!els.resultModal.hidden) hideResultModal();
+        }
+
+        // Cmd/Ctrl + Enter to generate
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          if (state.activeTab === 'generate') {
+            if (state.activeGenType === 'video') {
+              generateVideo();
+            } else {
+              generateImage();
+            }
+          }
+        }
+
+        // Tab navigation with numbers
+        if (e.altKey && ['1', '2', '3'].includes(e.key)) {
+          e.preventDefault();
+          const tabs = ['generate', 'history', 'pipelines'];
+          switchTab(tabs[parseInt(e.key) - 1]);
+        }
+      }
+
+      // ----- Initialize -----
+      function init() {
+        // Theme
+        initTheme();
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+          if (state.theme === 'system') applyTheme('system');
+        });
+
+        // Settings
+        loadSettings();
+        updateCapabilitiesDisplay();
+
+        // History
+        loadHistory();
+
+        // Pipelines
+        renderPipelines();
+
+        // Event Listeners
+        els.themeToggle.addEventListener('click', toggleTheme);
+
+        els.settingsBtn.addEventListener('click', openSettingsModal);
+        els.settingsClose.addEventListener('click', closeSettingsModal);
+        els.settingsCancel.addEventListener('click', closeSettingsModal);
+        els.settingsSave.addEventListener('click', saveSettings);
+        els.settingsModal.addEventListener('click', (e) => {
+          if (e.target === els.settingsModal) closeSettingsModal();
+        });
+
+        els.navTabs.forEach(btn => {
+          btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+        });
+
+        els.mobileMenuBtn.addEventListener('click', () => {
+          const expanded = els.mobileMenuBtn.getAttribute('aria-expanded') === 'true';
+          els.mobileMenu.hidden = expanded;
+          els.mobileMenuBtn.setAttribute('aria-expanded', !expanded);
+        });
+
+        els.tabVideo.addEventListener('click', () => switchGenType('video'));
+        els.tabImage.addEventListener('click', () => switchGenType('image'));
+
+        els.generateVideo.addEventListener('click', generateVideo);
+        els.generateImage.addEventListener('click', generateImage);
+
+        els.videoExamples.addEventListener('click', handleExampleClick);
+        els.imageExamples.addEventListener('click', handleExampleClick);
+
+        els.referenceImage.addEventListener('change', handleReferenceImage);
+        els.referenceDropzone.addEventListener('click', handleDropzoneClick);
+        els.referenceDropzone.addEventListener('keydown', handleDropzoneKeydown);
+        els.referenceDropzone.addEventListener('dragover', handleDragOver);
+        els.referenceDropzone.addEventListener('dragleave', handleDragLeave);
+        els.referenceDropzone.addEventListener('drop', handleDrop);
+        els.referencePreview.querySelector('button').addEventListener('click', removeReferenceImage);
+
+        els.resultClose.addEventListener('click', hideResultModal);
+        els.resultModal.addEventListener('click', (e) => {
+          if (e.target === els.resultModal) hideResultModal();
+        });
+        els.resultDownload.addEventListener('click', () => downloadResult(state.currentGeneration?.urls?.[0] || state.currentGeneration?.url, state.currentGeneration?.type));
+        els.resultRegenerate.addEventListener('click', regenerateCurrent);
+        els.resultSave.addEventListener('click', saveCurrentGeneration);
+
+        els.testConnection.addEventListener('click', testConnection);
+        els.refreshStatus.addEventListener('click', refreshStatus);
+
+        document.addEventListener('keydown', handleKeydown);
+
+        // Expose functions globally for inline handlers
+        window.switchTab = switchTab;
+        window.switchGenType = switchGenType;
+        window.downloadResult = downloadResult;
+        window.downloadImage = downloadImage;
+        window.regenerateItem = regenerateItem;
+        window.deleteHistoryItem = deleteHistoryItem;
+        window.showPipelineDetail = (id) => showToast(`Pipeline detail for ${id} - coming soon`, 'info');
+
+        console.log('OpenMontage Studio initialized');
+      }
+
+      // Start when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+    })();
+  </script>
+</body>
+</html>
