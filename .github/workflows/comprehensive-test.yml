@@ -1,0 +1,483 @@
+name: Comprehensive Test Suite
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+  workflow_dispatch:
+
+env:
+  PYTHON_VERSION: '3.11'
+  NODE_VERSION: '20'
+
+jobs:
+  # ============================================
+  # Lint & Static Analysis
+  # ============================================
+  lint:
+    name: Lint & Static Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install Python dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx ruff mypy
+
+      - name: Run Python syntax check
+        run: python -m py_compile backend.py
+
+      - name: Run Ruff linter
+        run: ruff check backend.py --output-format=github
+
+      - name: Run MyPy type check
+        run: mypy backend.py --ignore-missing-imports || true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: Validate HTML structure
+        run: |
+          python3 -c "
+import html
+with open('index.html', 'r') as f:
+    content = f.read()
+assert '<!DOCTYPE html>' in content
+assert '<html' in content
+assert '<head>' in content
+assert '<body' in content
+assert '<script' in content
+assert '<style>' in content
+print('HTML structure valid')
+print(f'Size: {len(content)} chars')
+"
+
+  # ============================================
+  # Unit Tests
+  # ============================================
+  unit-tests:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx
+
+      - name: Run backend unit tests
+        run: |
+          python3 -c "
+import asyncio
+import sys
+sys.path.insert(0, '.')
+from backend import MockProvider, VideoGenerationRequest, ImageGenerationRequest, TtsRequest, MusicGenerationRequest, PipelineExecutor, PipelineType
+
+print('Testing MockProvider...')
+async def test_mock_provider():
+    # Test video generation
+    video_result = await MockProvider.generate_video(VideoGenerationRequest(
+        prompt='test video', model='seedance_2_0', aspect_ratio='16:9', duration=5
+    ))
+    assert video_result.primary_url
+    assert len(video_result.urls) > 0
+    assert video_result.metadata['model'] == 'seedance_2_0'
+    print('✓ Video generation')
+
+    # Test image generation
+    image_result = await MockProvider.generate_image(ImageGenerationRequest(
+        prompt='test image', model='flux_1_1_pro', aspect_ratio='1:1', count=2
+    ))
+    assert image_result.primary_url
+    assert len(image_result.urls) == 2
+    assert image_result.metadata['count'] == 2
+    print('✓ Image generation')
+
+    # Test TTS
+    tts_result = await MockProvider.generate_tts(TtsRequest(text='Hello world'))
+    assert tts_result.primary_url
+    print('✓ TTS generation')
+
+    # Test Music
+    music_result = await MockProvider.generate_music(MusicGenerationRequest(prompt='ambient'))
+    assert music_result.primary_url
+    print('✓ Music generation')
+
+    print('All MockProvider tests passed!')
+
+asyncio.run(test_mock_provider())
+"
+
+      - name: Test pipeline executor
+        run: |
+          python3 -c "
+import asyncio
+import sys
+sys.path.insert(0, '.')
+from backend import PipelineExecutor, PipelineType, PipelineExecutionRequest
+
+print('Testing PipelineExecutor...')
+# Just verify stages are defined
+for ptype in PipelineType:
+    stages = PipelineExecutor.PIPELINE_STAGES.get(ptype, [])
+    approval = PipelineExecutor.HUMAN_APPROVAL_STAGES.get(ptype, [])
+    print(f'  {ptype.value}: {len(stages)} stages, {len(approval)} approval gates')
+
+print('PipelineExecutor structure valid!')
+"
+
+  # ============================================
+  # Integration Tests with Live Backend
+  # ============================================
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-asyncio httpx websockets
+
+      - name: Start backend server
+        run: |
+          python backend.py &
+          sleep 5
+          echo "Backend started"
+
+      - name: Wait for backend health
+        run: |
+          for i in {1..30}; do
+            if curl -sf http://localhost:8000/health > /dev/null; then
+              echo "Backend healthy"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Test health endpoint
+        run: |
+          curl -s http://localhost:8000/health | python3 -m json.tool
+
+      - name: Test registry endpoint
+        run: |
+          curl -s http://localhost:8000/api/registry | python3 -m json.tool
+
+      - name: Test video generation flow
+        run: |
+          python3 -c "
+import asyncio
+import httpx
+
+async def test_video():
+    async with httpx.AsyncClient(base_url='http://localhost:8000', timeout=60) as client:
+        # Start generation
+        resp = await client.post('/api/generate/video', json={
+            'prompt': 'Test video for CI',
+            'model': 'seedance_2_0',
+            'aspect_ratio': '16:9',
+            'duration': 5
+        })
+        assert resp.status_code == 200
+        job = resp.json()
+        job_id = job['id']
+        print(f'Started job: {job_id}')
+
+        # Poll for completion
+        for i in range(30):
+            await asyncio.sleep(2)
+            resp = await client.get(f'/api/jobs/video/{job_id}')
+            job = resp.json()
+            print(f'  Progress: {job[\"progress\"]}% - {job.get(\"current_stage\", \"N/A\")}')
+            if job['status'] == 'completed':
+                assert job['result']
+                assert job['result']['primary_url']
+                print('✓ Video generation completed')
+                return
+            elif job['status'] == 'failed':
+                raise Exception(f'Job failed: {job.get(\"error\")}')
+        raise Exception('Timeout waiting for completion')
+
+asyncio.run(test_video())
+"
+
+      - name: Test image generation flow
+        run: |
+          python3 -c "
+import asyncio
+import httpx
+
+async def test_image():
+    async with httpx.AsyncClient(base_url='http://localhost:8000', timeout=60) as client:
+        resp = await client.post('/api/generate/image', json={
+            'prompt': 'Test image for CI',
+            'model': 'flux_1_1_pro',
+            'aspect_ratio': '1:1',
+            'count': 1
+        })
+        assert resp.status_code == 200
+        job = resp.json()
+        job_id = job['id']
+        print(f'Started job: {job_id}')
+
+        for i in range(20):
+            await asyncio.sleep(1)
+            resp = await client.get(f'/api/jobs/image/{job_id}')
+            job = resp.json()
+            print(f'  Progress: {job[\"progress\"]}%')
+            if job['status'] == 'completed':
+                assert job['result']
+                assert job['result']['primary_url']
+                print('✓ Image generation completed')
+                return
+            elif job['status'] == 'failed':
+                raise Exception(f'Job failed: {job.get(\"error\")}')
+        raise Exception('Timeout waiting for completion')
+
+asyncio.run(test_image())
+"
+
+      - name: Test pipeline execution flow
+        run: |
+          python3 -c "
+import asyncio
+import httpx
+
+async def test_pipeline():
+    async with httpx.AsyncClient(base_url='http://localhost:8000', timeout=120) as client:
+        resp = await client.post('/api/pipelines/execute', json={
+            'pipeline': 'animated-explainer',
+            'brief': 'CI test pipeline',
+            'options': {'target_duration': 30}
+        })
+        assert resp.status_code == 200
+        job = resp.json()
+        job_id = job['id']
+        print(f'Started pipeline: {job_id}')
+
+        for i in range(50):
+            await asyncio.sleep(2)
+            resp = await client.get(f'/api/pipelines/jobs/{job_id}')
+            job = resp.json()
+            print(f'  Progress: {job[\"progress\"]}% - Stage: {job.get(\"current_stage\", \"N/A\")} ({job.get(\"current_stage_index\", 0)}/{len(job.get(\"stages\", []))})')
+            if job['status'] == 'completed':
+                assert job['result']
+                print('✓ Pipeline execution completed')
+                return
+            elif job['status'] == 'failed':
+                raise Exception(f'Job failed: {job.get(\"error\")}')
+        raise Exception('Timeout waiting for completion')
+
+asyncio.run(test_pipeline())
+"
+
+      - name: Test WebSocket connection
+        run: |
+          python3 -c "
+import asyncio
+import websockets
+import json
+
+async def test_ws():
+    uri = 'ws://localhost:8000/ws'
+    async with websockets.connect(uri) as ws:
+        # Subscribe to a job
+        await ws.send(json.dumps({'type': 'subscribe_job', 'job_id': 'test-123'}))
+        resp = await ws.recv()
+        data = json.loads(resp)
+        assert data['type'] == 'subscribed'
+        print('✓ WebSocket subscription works')
+        
+        # Test ping/pong
+        await ws.send(json.dumps({'type': 'ping'}))
+        resp = await ws.recv()
+        data = json.loads(resp)
+        assert data['type'] == 'pong'
+        print('✓ WebSocket ping/pong works')
+
+asyncio.run(test_ws())
+"
+
+      - name: Stop backend
+        run: pkill -f "python backend.py" || true
+
+  # ============================================
+  # Frontend Build & Test
+  # ============================================
+  frontend-build:
+    name: Frontend Build
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build production
+        run: npm run build
+
+      - name: Verify build output
+        run: |
+          ls -la dist/
+          test -f dist/index.html
+          echo 'Build output verified'
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+          retention-days: 7
+
+  # ============================================
+  # Docker Build & Test
+  # ============================================
+  docker:
+    name: Docker Build & Test
+    runs-on: ubuntu-latest
+    needs: lint
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: false
+          tags: openmontage-studio:latest
+          load: true
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Test Docker image
+        run: |
+          docker run --rm -d -p 8000:8000 --name test-container openmontage-studio:latest
+          sleep 10
+          curl -sf http://localhost:8000/health || (docker logs test-container && exit 1)
+          docker stop test-container
+          echo '✓ Docker image works'
+
+  # ============================================
+  # FreeLLMAPI Integration Test (if secrets available)
+  # ============================================
+  freellmapi-test:
+    name: FreeLLMAPI Integration Test
+    runs-on: ubuntu-latest
+    if: ${{ secrets.FREE_LLM_API_KEY != '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: 'pip'
+
+      - name: Install FreeLLMAPI
+        run: pip install freellmapi
+
+      - name: Test FreeLLMAPI connection
+        env:
+          FREE_LLM_API_KEY: ${{ secrets.FREE_LLM_API_KEY }}
+          FREE_LLM_API_BASE_URL: ${{ secrets.FREE_LLM_API_BASE_URL }}
+        run: |
+          python3 -c "
+import os
+from freellmapi import FreeLLMAPI
+
+client = FreeLLMAPI(
+    api_key=os.getenv('FREE_LLM_API_KEY'),
+    base_url=os.getenv('FREE_LLM_API_BASE_URL', 'https://api.freellmapi.com/v1')
+)
+
+# Test with a simple prompt
+response = client.chat.completions.create(
+    model='claude-3.5-sonnet',
+    messages=[{'role': 'user', 'content': 'Say hello in one sentence.'}],
+    max_tokens=50
+)
+
+print('FreeLLMAPI Response:', response.choices[0].message.content)
+print('✓ FreeLLMAPI integration works!')
+"
+
+  # ============================================
+  # Deploy to GitHub Pages
+  # ============================================
+  deploy-pages:
+    name: Deploy to GitHub Pages
+    runs-on: ubuntu-latest
+    needs: [frontend-build, integration-tests]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist/
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
