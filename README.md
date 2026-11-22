@@ -1,12 +1,13 @@
 # OpenMontage Studio
 
-Professional AI video and image generation studio powered by OpenMontage.
+Professional AI video and image generation studio powered by OpenMontage, with FreeLLMAPI integration for AI-assisted content creation.
 
 ## Features
 
 - **Video Generation**: Text-to-video and image-to-video with multiple providers (Seedance 2.0, VEO, Kling, Sora, Runway, LTX, Gemini Omni)
 - **Image Generation**: Text-to-image with FLUX, GPT Image, Recraft, Ideogram
 - **Pipeline System**: Structured multi-stage video production (Animated Explainer, Cinematic, Avatar Spokesperson, etc.)
+- **AI-Assisted Creation**: FreeLLMAPI integration for script generation, prompt enhancement, and code generation
 - **Real-time Progress**: WebSocket-based live updates during generation
 - **Composition Runtimes**: Remotion (React), HyperFrames (HTML/GSAP), FFmpeg
 - **Theme Support**: Light/dark mode with OKLCH color tokens
@@ -18,123 +19,93 @@ Professional AI video and image generation studio powered by OpenMontage.
 
 - Python 3.11+
 - Node.js 18+ (for frontend dev)
+- Docker (optional, for containerized deployment)
 - OpenMontage installed (for full pipeline support)
+- FreeLLMAPI account (for AI-assisted features)
 
-### Backend Setup
+### Environment Setup
 
 ```bash
+# Clone the repository
+git clone https://github.com/IMDE122/openmontage-studio.git
+cd openmontage-studio
+
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your API keys
+# Required for video/image generation:
+# FAL_KEY=your_fal_ai_key
+# HEYGEN_API_KEY=your_heygen_key
+# GEMINI_API_KEY=your_gemini_key
+# OPENAI_API_KEY=your_openai_key
+
+# Required for AI-assisted features (FreeLLMAPI):
+# FREE_LLM_API_KEY=your_freellmapi_key
+# FREE_LLM_API_BASE_URL=https://api.freellmapi.com/v1
+```
+
+### Option 1: Docker (Recommended)
+
+```bash
+# Development
+docker-compose up -d
+
+# Production
+docker-compose --profile production up -d --build
+
+# With OpenMontage full pipeline support
+docker-compose --profile full up -d
+```
+
+Access:
+- Frontend: http://localhost:3000 (dev) or http://localhost (prod)
+- Backend API: http://localhost:8000
+- API Docs: http://localhost:8000/docs
+
+### Option 2: Manual Setup
+
+#### Backend
+```bash
 cd videogen-app
-
-# Install Python dependencies
 pip install -r requirements.txt
-
-# Set API keys (optional - uses mock providers without them)
-export FAL_KEY="your_fal_key"
-export HEYGEN_API_KEY="your_heygen_key"
-export GEMINI_API_KEY="your_gemini_key"
-
-# Start backend server
 python backend.py
 ```
 
-Backend runs on `http://localhost:8000` with API docs at `/docs`.
-
-### Frontend Development
-
+#### Frontend
 ```bash
 cd videogen-app
-
-# Install dependencies
 npm install
-
-# Start dev server (proxies API to backend)
 npm run dev
 ```
 
-Frontend runs on `http://localhost:3000`.
+## FreeLLMAPI Integration
 
-### Production Build
+OpenMontage Studio integrates with [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi) for AI-assisted content creation:
 
-```bash
-npm run build
-```
+### Supported Models via FreeLLMAPI
+- **Claude** (Anthropic): claude-3.5-sonnet, claude-3-opus, claude-3-haiku
+- **Codex** (OpenAI): codex-1, codex-mini
+- **GPT-4/4o** (OpenAI): gpt-4o, gpt-4-turbo
+- **Gemini** (Google): gemini-pro, gemini-pro-vision
+- **Llama 3** (Meta): llama-3-70b, llama-3-8b
+- **Mistral**: mistral-large, mistral-medium
 
-Outputs to `dist/` directory.
+### AI-Assisted Features
 
-## Architecture
+1. **Prompt Enhancement** - Automatically improve generation prompts
+2. **Script Generation** - Create complete video scripts from briefs
+3. **Code Generation** - Generate Remotion/HyperFrames compositions
+4. **Pipeline Optimization** - AI-driven pipeline parameter selection
 
-```
-videogen-app/
-├── index.html           # Main frontend (self-contained HTML)
-├── openmontage-client.ts # TypeScript client library
-├── backend.py           # FastAPI backend server
-├── package.json         # Node.js config
-├── tsconfig.json        # TypeScript config
-├── vite.config.ts       # Vite config
-└── requirements.txt     # Python dependencies
-```
-
-## API Endpoints
-
-### Health & Registry
-- `GET /health` - System health check
-- `GET /api/registry` - Tool registry capabilities
-
-### Generation
-- `POST /api/generate/video` - Start video generation
-- `POST /api/generate/image` - Start image generation
-- `POST /api/generate/tts` - Start TTS generation
-- `POST /api/generate/music` - Start music generation
-
-### Job Management
-- `GET /api/jobs/video/{id}` - Get video job status
-- `GET /api/jobs/image/{id}` - Get image job status
-- `POST /api/jobs/video/{id}/cancel` - Cancel video job
-- `POST /api/jobs/image/{id}/cancel` - Cancel image job
-
-### Pipelines
-- `POST /api/pipelines/execute` - Execute pipeline
-- `GET /api/pipelines/jobs/{id}` - Get pipeline job status
-- `POST /api/pipelines/jobs/{id}/approve` - Approve pipeline stage
-- `POST /api/pipelines/jobs/{id}/cancel` - Cancel pipeline
-- `GET /api/pipelines` - List pipelines
-- `GET /api/pipelines/{id}/manifest` - Get pipeline manifest
-
-### Real-time
-- `WS /ws` - WebSocket for live updates
-
-## OpenMontage Integration
-
-The backend connects to OpenMontage's:
-- **Tool Registry**: Auto-discovers 56+ tools across capabilities
-- **Pipelines**: 13 structured production workflows
-- **Skills**: 60+ skills for prompting, composition, rendering
-- **Agents**: Orchestrator and stage directors
-
-## Configuration
-
-### Environment Variables
-
-```bash
-# API Keys
-FAL_KEY=                    # fal.ai (Seedance, Kling, MiniMax, VEO)
-HEYGEN_API_KEY=             # HeyGen (Video Agent, Avatar, VEO 3.1, Sora)
-GEMINI_API_KEY=             # Gemini Omni Flash
-GOOGLE_API_KEY=             # Alternative to GEMINI_API_KEY
-OPENAI_API_KEY=             # GPT Image
-
-# Server
-HOST=0.0.0.0
-PORT=8000
-DEBUG=true
-```
+See [FREE_LLM_API_SETUP.md](../FREE_LLM_API_SETUP.md) for detailed setup instructions.
 
 ## Supported Providers
 
 | Provider | Video Models | Image Models | Audio |
 |----------|-------------|--------------|-------|
 | fal.ai | Seedance 2.0, Kling, MiniMax, VEO | FLUX | - |
-| HeyGen | Video Agent, Avatar Shots, VEO 3.1, Sora, Runway | - | - |
+| HeyGen | Video Agent, Avatar Shots, VEO 3.1, Sora | - | - |
 | Gemini | Omni Flash (gen + edit) | - | - |
 | BFL | - | FLUX 1.1 Pro, Pro, Dev, Schnell | - |
 | OpenAI | - | GPT Image | TTS |
@@ -166,6 +137,35 @@ DEBUG=true
 | Localization Dub | 7 | Beta | Multi-language |
 | Documentary Montage | 5 | Beta | Real footage montage |
 | Character Animation | 7 | Beta | Rigged characters |
+
+## API Endpoints
+
+### Health & Registry
+- `GET /health` - System health check
+- `GET /api/registry` - Tool registry capabilities
+
+### Generation
+- `POST /api/generate/video` - Start video generation
+- `POST /api/generate/image` - Start image generation
+- `POST /api/generate/tts` - Start TTS generation
+- `POST /api/generate/music` - Start music generation
+
+### Job Management
+- `GET /api/jobs/video/{id}` - Get video job status
+- `GET /api/jobs/image/{id}` - Get image job status
+- `POST /api/jobs/video/{id}/cancel` - Cancel video job
+- `POST /api/jobs/image/{id}/cancel` - Cancel image job
+
+### Pipelines
+- `POST /api/pipelines/execute` - Execute pipeline
+- `GET /api/pipelines/jobs/{id}` - Get pipeline job status
+- `POST /api/pipelines/jobs/{id}/approve` - Approve pipeline stage
+- `POST /api/pipelines/jobs/{id}/cancel` - Cancel pipeline
+- `GET /api/pipelines` - List pipelines
+- `GET /api/pipelines/{id}/manifest` - Get pipeline manifest
+
+### Real-time
+- `WS /ws` - WebSocket for live updates
 
 ## Client Library Usage
 
@@ -204,6 +204,83 @@ const pipeline = await client.executePipelineAndWait({
 });
 ```
 
+## Architecture
+
+```
+videogen-app/
+├── index.html              # Main frontend (self-contained HTML)
+├── openmontage-client.ts   # TypeScript client library
+├── backend.py              # FastAPI backend server
+├── Dockerfile              # Multi-stage Docker build
+├── docker-compose.yml      # Docker Compose for dev/prod
+├── nginx.conf              # Nginx config for production
+├── .github/workflows/ci.yml # GitHub Actions CI/CD
+├── package.json            # Node.js config
+├── tsconfig.json           # TypeScript config
+├── vite.config.ts          # Vite config
+├── requirements.txt        # Python dependencies
+└── .gitignore              # Git ignore rules
+```
+
+## GitHub Actions CI/CD
+
+The repository includes a complete CI/CD pipeline:
+
+- **Lint & Test**: Python syntax check, TypeScript type check, HTML validation
+- **Build Frontend**: Vite production build
+- **Docker**: Multi-stage build and test
+- **Deploy**: GitHub Pages deployment for frontend
+
+## Environment Variables
+
+```bash
+# Video/Image Generation APIs
+FAL_KEY=                    # fal.ai (Seedance, Kling, MiniMax, VEO)
+HEYGEN_API_KEY=             # HeyGen (Video Agent, Avatar, VEO 3.1, Sora)
+GEMINI_API_KEY=             # Gemini Omni Flash
+OPENAI_API_KEY=             # GPT Image, TTS
+
+# FreeLLMAPI (AI-assisted features)
+FREE_LLM_API_KEY=           # FreeLLMAPI key
+FREE_LLM_API_BASE_URL=      # FreeLLMAPI base URL
+
+# Server
+HOST=0.0.0.0
+PORT=8000
+DEBUG=true
+```
+
+## Development
+
+### Running Tests
+
+```bash
+# Backend tests
+cd videogen-app && python -m pytest tests/ -v
+
+# Frontend type check
+cd videogen-app && npm run type-check
+
+# Full CI locally
+act -j lint-and-test  # Requires 'act' tool
+```
+
+### Adding New Providers
+
+1. Add provider to `backend.py` mock providers
+2. Update `openmontage-client.ts` types
+3. Add UI options in `index.html`
+4. Update documentation
+
 ## License
 
 MIT
+
+## Resources
+
+- [OpenMontage](https://github.com/your-org/OpenMontage)
+- [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi)
+- [Remotion](https://www.remotion.dev/)
+- [HyperFrames](https://hyperframes.dev/)
+- [fal.ai](https://fal.ai/)
+- [HeyGen](https://www.heygen.com/)
