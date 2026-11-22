@@ -914,34 +914,38 @@ export class OpenMontageClient {
 
   onJobProgress(jobId: string, callback: (progress: number, stage: string, detail: string) => void): () => void {
     return this.subscribeToJob(jobId, (message) => {
-      if (message.type === 'job_progress') {
-        callback(message.data.progress, message.data.stage, message.data.detail);
-      } else if (message.type === 'job_stage_change') {
-        callback(message.data.progress, message.data.stage, message.data.detail);
+      const data = message.data as { progress: number; stage: string; detail: string } | undefined;
+      if (message.type === 'job_progress' && data) {
+        callback(data.progress, data.stage, data.detail);
+      } else if (message.type === 'job_stage_change' && data) {
+        callback(data.progress, data.stage, data.detail);
       }
     });
   }
 
   onJobComplete(jobId: string, callback: (result: GenerationResult) => void): () => void {
     return this.subscribeToJob(jobId, (message) => {
-      if (message.type === 'job_completed') {
-        callback(message.data.result);
+      const data = message.data as { result: GenerationResult } | undefined;
+      if (message.type === 'job_completed' && data) {
+        callback(data.result);
       }
     });
   }
 
   onJobError(jobId: string, callback: (error: GenerationError) => void): () => void {
     return this.subscribeToJob(jobId, (message) => {
-      if (message.type === 'job_failed') {
-        callback(message.data.error);
+      const data = message.data as { error: GenerationError } | undefined;
+      if (message.type === 'job_failed' && data) {
+        callback(data.error);
       }
     });
   }
 
   onHumanApprovalRequired(jobId: string, callback: (stage: PipelineStage, artifact: Record<string, unknown>) => void): () => void {
     return this.subscribeToJob(jobId, (message) => {
-      if (message.type === 'human_approval_required') {
-        callback(message.data.stage, message.data.artifact);
+      const data = message.data as { stage: PipelineStage; artifact: Record<string, unknown> } | undefined;
+      if (message.type === 'human_approval_required' && data) {
+        callback(data.stage, data.artifact);
       }
     });
   }
@@ -1036,15 +1040,22 @@ export class OpenMontageClient {
   }
 
   static createFromEnv(): OpenMontageClient {
+    // Handle both Vite (import.meta.env) and Node.js (process.env) environments
+    let env: Record<string, string | undefined> = {};
+    if (typeof import.meta !== 'undefined' && 'env' in import.meta) {
+      env = (import.meta as unknown as { env: Record<string, string | undefined> }).env;
+    } else if (typeof process !== 'undefined' && process.env) {
+      env = process.env;
+    }
     return new OpenMontageClient({
-      baseUrl: import.meta.env?.VITE_OM_BASE_URL || 'http://localhost:8000',
+      baseUrl: env.VITE_OM_BASE_URL || 'http://localhost:8000',
       apiKeys: {
-        FAL_KEY: import.meta.env?.VITE_FAL_KEY,
-        HEYGEN_API_KEY: import.meta.env?.VITE_HEYGEN_API_KEY,
-        GEMINI_API_KEY: import.meta.env?.VITE_GEMINI_API_KEY,
-        OPENAI_API_KEY: import.meta.env?.VITE_OPENAI_API_KEY,
+        FAL_KEY: env.VITE_FAL_KEY,
+        HEYGEN_API_KEY: env.VITE_HEYGEN_API_KEY,
+        GEMINI_API_KEY: env.VITE_GEMINI_API_KEY,
+        OPENAI_API_KEY: env.VITE_OPENAI_API_KEY,
       },
-      debug: import.meta.env?.VITE_OM_DEBUG === 'true',
+      debug: env.VITE_OM_DEBUG === 'true',
     });
   }
 }
@@ -1090,7 +1101,7 @@ export function createOpenMontageHooks(client: OpenMontageClient) {
     },
 
     // Job monitoring
-    useJobProgress: (jobId: string | null) => {
+    useJobProgress: (_jobId: string | null) => {
       // Implementation would use React state
       return { progress: 0, stage: '', detail: '' };
     },
