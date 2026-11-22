@@ -79,9 +79,28 @@ npm install
 npm run dev
 ```
 
-## FreeLLMAPI Integration
+## ECC Integration
 
-OpenMontage Studio integrates with [FreeLLMAPI](https://github.com/tashfeenahmed/freellmapi) for AI-assisted content creation:
+OpenMontage Studio includes [ECC](https://github.com/affaan-m/ECC) - an agent harness operating system that provides:
+- **72 specialized agents** for planning, review, build repair, security, architecture
+- **328 skills** for TDD, research, security, docs, frontend, data, ML, operations
+- **99 commands** for TDD, planning, E2E tests, code review, build fix, learning
+- **Hooks & memory** for session persistence, continuous learning
+- **AgentShield** for security scanning
+
+ECC is installed as a git submodule at `.ecc/`:
+
+```bash
+# Initialize ECC (already done in repo)
+git submodule update --init --recursive
+
+# Or use npx for standalone install
+npx ecc-universal@2.2.3 setup --mode claude-plugin --scope project --yes
+```
+
+ECC provides agents like `/tdd`, `/plan`, `/code-review`, `/build-fix`, `/learn`, `/skill-create` that enhance the development workflow.
+
+## FreeLLMAPI Integration
 
 ### Supported Models via FreeLLMAPI
 - **Claude** (Anthropic): claude-3.5-sonnet, claude-3-opus, claude-3-haiku
